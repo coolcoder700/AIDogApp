@@ -26,20 +26,21 @@
                 let canvas = createCanvas(320, 260);
                 canvas.parent('canvas-container');
                 
-                // Request camera permission
-                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                    navigator.mediaDevices.getUserMedia({ video: true }).then(function(stream) {
-                        video = createCapture(VIDEO);
-                        video.size(320, 240);
-                        video.hide();
-                        flippedVideo = ml5.flipImage(video);
-                        flippedVideo.hide();
-                        document.getElementById('canvas-container').appendChild(flippedVideo.elt);
-                        classifyVideo();
-                    }).catch(function(error) {
-                        console.error("Error accessing the camera:", error);
-                    });
-                }
+                // Thunkable function to request camera permission
+                ThunkableWebviewerExtension.requestCameraCapture()
+                .then(() => {
+                    // User has granted permission
+                    video = createCapture(VIDEO);
+                    video.size(320, 240);
+                    video.hide();
+                    flippedVideo = ml5.flipImage(video);
+                    flippedVideo.hide();
+                    document.getElementById('canvas-container').appendChild(flippedVideo.elt);
+                    classifyVideo();
+                })
+                .catch(error => {
+                    console.error("Error accessing the camera:", error);
+                });
 
                 // Draw the video and label
                 draw();
@@ -87,4 +88,3 @@
         </script>
     </div>
 </div>
-
