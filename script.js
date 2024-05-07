@@ -1,0 +1,1 @@
+navigator.getUserMedia({video: true}, function(localMediaStream) { ThunkableWebviewerExtension.postMessage("camera-Granted"); }, function(err) { if(err.includes("denied")) { ThunkableWebviewerExtension.postMessage("camera-Denied"); } else { ThunkableWebviewerExtension.postMessage("camera-Error"); } });
