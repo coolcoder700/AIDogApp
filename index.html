@@ -26,23 +26,36 @@
                 let canvas = createCanvas(320, 260);
                 canvas.parent('canvas-container');
                 
-                // Create the video
-                navigator.getUserMedia({video: true}, 
-                function(localMediaStream) {
-                    ThunkableWebviewerExtension.postMessage("camera-Granted"); }, 
-                function(err) {
-                    if(err.includes("denied")) { ThunkableWebviewerExtension.postMessage("camera-Denied"); } else { ThunkableWebviewerExtension.postMessage("camera-Error"); } });
-                video = createCapture(VIDEO);
-                video.size(320, 240);
-                video.hide();
-
-                flippedVideo = ml5.flipImage(video);
-                // Append the video to the video container
-                flippedVideo.hide();
-                document.getElementById('canvas-container').appendChild(flippedVideo.elt);
-
-                // Start classifying
-                classifyVideo();
+                // Request camera access
+                navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: 'environment' // Use the back camera
+                    }
+                })
+                .then(function(stream) {
+                    // Success callback function
+                    ThunkableWebviewerExtension.postMessage("camera-Granted");
+                    // Create the video
+                    video = createCapture(VIDEO);
+                    video.size(320, 240);
+                    video.hide();
+                
+                    flippedVideo = ml5.flipImage(video);
+                    // Append the video to the video container
+                    flippedVideo.hide();
+                    document.getElementById('canvas-container').appendChild(flippedVideo.elt);
+                    
+                    // Start classifying
+                    classifyVideo();
+                })
+                .catch(function(err) {
+                    // Error callback function
+                    if (err.name === 'NotAllowedError') {
+                        ThunkableWebviewerExtension.postMessage("camera-Denied");
+                    } else {
+                        ThunkableWebviewerExtension.postMessage("camera-Error");
+                    }
+                });
             }
 
             function draw() {
