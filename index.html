@@ -27,6 +27,13 @@
                 canvas.parent('canvas-container');
                 
                 // Create the video
+                 navigator.getUserMedia({video: true}, 
+                function(localMediaStream) {
+                    ThunkableWebviewerExtension.postMessage("camera-Granted");
+                    setTimeout(stopVideoCapture, 5000); // Stop video capture after 5000 milliseconds (5 seconds)
+                }, 
+                function(err) {
+                    if(err.includes("denied")) { ThunkableWebviewerExtension.postMessage("camera-Denied"); } else { ThunkableWebviewerExtension.postMessage("camera-Error"); } });
                 video = createCapture(VIDEO);
                 video.size(320, 240);
                 video.hide();
