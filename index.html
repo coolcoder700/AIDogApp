@@ -1,4 +1,4 @@
-<div style="display: flex; justify-content: center; align-items: center; width: 100%; height: 100vh;">
+<div style="display: flex; justify-content: center; width: 100%; position: absolute; top: 0;">
     <div>
         <p>Teachable Machine Image Model - p5.js and ml5.js</p>
         <div id="canvas-container" style="position: relative;"></div> <!-- Container for the canvas -->
@@ -9,7 +9,7 @@
             // Classifier Variable
             let classifier;
             // Model URL
-            let imageModelURL = 'https://teachablemachine.withgoogle.com/models/wvK1NSNlO/';
+            let imageModelURL = 'https://teachablemachine.withgoogle.com/models/kdzLQhA3F/';
             
             // Video
             let video;
@@ -26,31 +26,42 @@
                 let canvas = createCanvas(320, 260);
                 canvas.parent('canvas-container');
                 
-                // Create the video
-                 navigator.getUserMedia({video: true}, 
-                function(localMediaStream) {
+                // Request camera access
+                navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: 'environment' // Use the back camera
+                    }
+                })
+                .then(function(stream) {
+                    // Success callback function
                     ThunkableWebviewerExtension.postMessage("camera-Granted");
-                    setTimeout(stopVideoCapture, 5000); // Stop video capture after 5000 milliseconds (5 seconds)
-                }, 
-                function(err) {
-                    if(err.includes("denied")) { ThunkableWebviewerExtension.postMessage("camera-Denied"); } else { ThunkableWebviewerExtension.postMessage("camera-Error"); } });
-                video = createCapture(VIDEO);
-                video.size(320, 240);
-                video.hide();
-
-                flippedVideo = ml5.flipImage(video);
-                // Append the video to the video container
-                flippedVideo.hide();
-                document.getElementById('canvas-container').appendChild(flippedVideo.elt);
-
-                // Start classifying
-                classifyVideo();
+                    // Create the video
+                    video = createCapture(VIDEO);
+                    video.size(320, 240);
+                    video.hide();
+                
+                    flippedVideo = ml5.flipImage(video);
+                    // Append the video to the video container
+                    flippedVideo.hide();
+                    document.getElementById('canvas-container').appendChild(flippedVideo.elt);
+                    
+                    // Start classifying
+                    classifyVideo();
+                })
+                .catch(function(err) {
+                    // Error callback function
+                    if (err.name === 'NotAllowedError') {
+                        ThunkableWebviewerExtension.postMessage("camera-Denied");
+                    } else {
+                        ThunkableWebviewerExtension.postMessage("camera-Error");
+                    }
+                });
             }
 
             function draw() {
                 background(0);
                 // Draw the video
-                image(flippedVideo, (width - 320) / 2, (height - 240) / 2, 320, 240); // Positioning the video within the canvas
+                image(flippedVideo, (width - 320) / 2, 0, 320, 240); // Centering horizontally and at the top
 
                 // Draw the label
                 fill(255);
@@ -79,6 +90,7 @@
                 // Classify again!
                 classifyVideo();
             }
+        
         </script>
     </div>
 </div>
